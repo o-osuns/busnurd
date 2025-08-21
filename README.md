@@ -37,14 +37,14 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-# setup database connection
+### setup database connection
 
-# in .env comment out the following and replace with the appropriate keys
-# DB_HOST=db
-# DB_PORT=5432
-# DB_DATABASE=busnurd
-# DB_USERNAME=postgres
-# DB_PASSWORD=postgres
+- in .env comment out the following and replace with the appropriate keys
+- DB_HOST=db
+- DB_PORT=5432
+- DB_DATABASE=busnurd
+- DB_USERNAME=postgres
+- DB_PASSWORD=postgres
 
-# Note
+### Note
 I intentionally used one branch (main) because this is an assessment. However, I used multiple commits
