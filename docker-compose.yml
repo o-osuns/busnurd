@@ -1,0 +1,76 @@
+services:
+  app:
+    build:
+      args:
+        user: dockerUser
+        uid: 1000
+        gid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: busnurd-app
+    container_name: busnurd-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    entrypoint: ["./entrypoint.sh"]
+    depends_on:
+      - db
+    networks:
+      - busnurd-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    ports:
+        - "9000:9000"
+  db:
+    image: postgres:16
+    container_name: busnurd-db
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    networks:
+      - busnurd-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  nginx:
+    image: nginx:latest
+    container_name: busnurd-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./:/var/www
+    depends_on:
+      - app
+    networks:
+      - busnurd-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  dbdata:
+
+networks:
+  busnurd-network:
+    driver: bridge
