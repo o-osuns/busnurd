@@ -18,7 +18,6 @@ return new class extends Migration
             $table->decimal('price', 10, 2);
             $table->text('description')->nullable();
             $table->string('image_path')->nullable();
-            $table->foreignUuid('user_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }
