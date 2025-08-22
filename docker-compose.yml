@@ -1,54 +1,54 @@
 services:
   app:
     build:
-      args:
-        user: "${UID}:${GID}"
-      context: ./
+      context: .
       dockerfile: Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     image: busnurd-app
     container_name: busnurd-app
-    restart: unless-stopped
-    working_dir: /var/www/
+    working_dir: /var/www
     volumes:
       - ./:/var/www
+      # keep deps off the host to avoid overlay + root-owned files
+      - vendor:/var/www/vendor
+      - node_modules:/var/www/node_modules
+    user: "${UID:-1000}:${GID:-1000}"
     entrypoint: ["./entrypoint.sh"]
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - busnurd-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    ports:
-        - "9000:9000"
+
   db:
     image: postgres:16
     container_name: busnurd-db
     restart: unless-stopped
     env_file:
       - .env
-    ports:
-      - "5432:5432"
     environment:
-      - POSTGRES_DB=${DB_DATABASE}
-      - POSTGRES_USER=${DB_USERNAME}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    # TIP: bind to loopback to avoid exposing Postgres to your LAN
+    ports:
+      - "127.0.0.1:5432:5432"
     volumes:
       - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     networks:
       - busnurd-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
 
   nginx:
-    image: nginx:latest
+    image: nginx:1.27-alpine
     container_name: busnurd-nginx
     ports:
       - "80:80"
@@ -57,16 +57,18 @@ services:
       - ./:/var/www
     depends_on:
       - app
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     networks:
       - busnurd-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
 
 volumes:
+  vendor:
+  node_modules:
   dbdata:
 
 networks:

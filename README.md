@@ -32,10 +32,13 @@ A tiny, production-lean CRUD app built with **Laravel 12**. Scope: email/passwor
 git clone https://github.com/o-osuns/busnurd.git
 cd busnurd
 docker compose build --no-cache
-docker compose up -d
 cp .env.example .env
-php artisan key:generate
+```
+- set up your DB
 
+```bash
+docker compose up -d
+php artisan key:generate
 php artisan storage:link
 ```
 

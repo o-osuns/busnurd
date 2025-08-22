@@ -1,13 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env sh
+set -e
+# cd /var/www
 
-# Only create the .env if it doesn't exist
-if [ ! -f .env ]; then
-  echo "[entrypoint] Creating .env from .env.example..."
-  cp .env.example .env
-  php artisan key:generate
-else
-  echo "[entrypoint] .env already exists. Skipping setup."
+[ -f .env ] || { echo "[entrypoint] Creating .env"; cp .env.example .env; }
+
+if [ ! -d vendor ]; then
+  echo "[entrypoint] composer install..."
+  composer install --no-interaction --prefer-dist --optimize-autoloader
 fi
 
-# Continue with the main container process
+if ! grep -q '^APP_KEY=' .env || [ -z "$(grep '^APP_KEY=' .env | cut -d= -f2)" ]; then
+  php artisan key:generate --force
+fi
+
 exec php-fpm
