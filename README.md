@@ -35,6 +35,8 @@ docker compose build --no-cache
 docker compose up -d
 cp .env.example .env
 php artisan key:generate
+
+php artisan storage:link
 ```
 
 ### setup database connection

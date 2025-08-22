@@ -2,9 +2,7 @@ services:
   app:
     build:
       args:
-        user: dockerUser
-        uid: 1000
-        gid: 1000
+        user: "${UID}:${GID}"
       context: ./
       dockerfile: Dockerfile
     image: busnurd-app
