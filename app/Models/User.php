@@ -61,19 +61,11 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Set the user's name.
-     * Automatically trims whitespace from the beginning and end.
-     */
     protected function setNameAttribute(string $value): void
     {
         $this->attributes['name'] = trim($value);
     }
 
-    /**
-     * Set the user's email.
-     * Automatically trims whitespace from the beginning and end.
-     */
     protected function setEmailAttribute(string $value): void
     {
         $this->attributes['email'] = trim($value);
