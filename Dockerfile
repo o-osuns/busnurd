@@ -2,6 +2,10 @@ FROM php:8.3-fpm
 
 RUN apt-get update && apt-get install -y \
     git unzip zip curl libpng-dev libonig-dev libxml2-dev libpq-dev \
+    libjpeg62-turbo-dev libfreetype6-dev \
+ && ln -s /usr/lib/x86_64-linux-gnu/libjpeg.so /usr/lib/libjpeg.so \
+ && ln -s /usr/lib/x86_64-linux-gnu/libjpeg.a /usr/lib/libjpeg.a \
+ && docker-php-ext-configure gd --with-freetype --with-jpeg=/usr \
  && docker-php-ext-install pdo pdo_pgsql mbstring gd bcmath
 
 # Composer CLI
